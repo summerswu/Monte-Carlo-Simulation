@@ -1,9 +1,17 @@
 from flask import Flask, request, jsonify
 from algorithm import approx
+from worker import integrate
 
 app = Flask(__name__)
+TASKS = {}
 
-@app.route("/")
+@app.route('/', methods=["GET"])
+def list_tasks():
+	tasks = { task_id: {'ready':task.ready}
+			  for task_id, task in TASKS.item()}
+	return jsonify(tasks)
+
+@app.route('/', methods = ['PUT'])
 def put_task():
 	f = request.json['f']
 	a = request.json['a']
@@ -13,7 +21,7 @@ def put_task():
 	size = request.json.get('size',100)
 
 	response = {
-		'result': approx(f,a,b,c,d,size),
+		'result': integrate.delay(f,a,b,c,d,size),
 	}
 	return jsonify(response)
 
